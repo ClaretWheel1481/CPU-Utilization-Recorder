@@ -1,16 +1,22 @@
 import time
 import psutil
+from datetime import datetime
 
-i = 0   # 初始
-end = 60    # 结束时间
+duration = 60  # 总运行时间（秒）
+interval = 0.1  # 采样间隔（秒，即100毫秒）
 
-while i < end:
-    t = time.localtime()
-    cpu_time = '%d:%d:%d' %(t.tm_hour,t.tm_min,t.tm_sec)
-    cpu_res = psutil.cpu_percent()
-    print(cpu_time,cpu_res)
+end_time = time.time() + duration
 
-    with open('cpu.txt','a+') as f:
-        f.write('%s, %s \n'%(cpu_time,cpu_res))
-    time.sleep(1)
-    i += 1
+# 初始化CPU使用率计算
+psutil.cpu_percent(interval=0.0)
+
+while time.time() < end_time:
+    # 获取CPU使用率（会阻塞interval秒）
+    cpu_usage = psutil.cpu_percent(interval=interval)
+
+    # 获取带毫秒的当前时间
+    current_time = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+
+    # 写入文件
+    with open('cpu.txt', 'a') as f:
+        f.write(f'{current_time}, {cpu_usage}\n')
